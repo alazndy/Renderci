@@ -1,4 +1,3 @@
-
 import React, { useCallback } from 'react';
 import { Header } from './components/Header';
 import { ImageUploader } from './components/ImageUploader';
@@ -9,15 +8,16 @@ import { GalleryModal } from './components/GalleryModal';
 import { InputPanel } from './components/InputPanel';
 import { ThreeDViewer } from './components/ThreeDViewer';
 import { useAppState } from './hooks/useAppState';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Sparkles, AlertCircle, Loader2 } from 'lucide-react';
+import { cn } from './lib/utils';
 
 const App: React.FC = () => {
     const {
-        sourceFile, setSourceFile,
-        styleReferenceFile,
+        sourceFile,
         previewUrl,
         stylePreviewUrl,
         selectedStylePreset,
-        resolution, setResolution,
         prompt, setPrompt,
         isLoading,
         error, setError,
@@ -75,30 +75,33 @@ const App: React.FC = () => {
     const handlePromptKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            if (!isLoading) {
-                handleRender();
-            }
+            if (!isLoading) handleRender();
         }
     }, [handleRender, isLoading]);
 
     const renderMainContent = () => {
         if (isRestoringSession) {
              return (
-                <div className="flex flex-col justify-center items-center h-full">
-                    <Loader />
-                    <p className="mt-4 text-indigo-300 animate-pulse font-medium">Sistem Yükleniyor...</p>
+                <div className="flex flex-col justify-center items-center h-full min-h-[400px]">
+                    <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
+                    <p className="text-primary font-bold tracking-widest animate-pulse uppercase text-xs">Sistem Yapılandırılıyor...</p>
                 </div>
             );
         }
         
-        // Show 3D Viewer if a 3dm file is loaded
         if (threeDFile) {
             return (
-                <ThreeDViewer 
-                    file={threeDFile} 
-                    onCapture={handleThreeDCapture} 
-                    onCancel={() => setThreeDFile(null)} 
-                />
+                <motion.div 
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="h-full"
+                >
+                    <ThreeDViewer 
+                        file={threeDFile} 
+                        onCapture={handleThreeDCapture} 
+                        onCancel={() => setThreeDFile(null)} 
+                    />
+                </motion.div>
             );
         }
 
@@ -133,15 +136,21 @@ const App: React.FC = () => {
 
         if (sourceFile) {
             return (
-                <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fadeIn h-full">
-                    <div className="flex flex-col h-full relative group">
-                         {/* Source Image Panel with Glow */}
-                         <div className="absolute -inset-0.5 bg-gradient-to-tr from-indigo-500/20 to-purple-500/20 rounded-3xl blur opacity-30 group-hover:opacity-60 transition duration-1000"></div>
-                         <div className="relative glass-panel p-2 rounded-3xl h-full max-h-[60vh] lg:max-h-full flex items-center justify-center overflow-hidden border border-white/5">
-                            <img src={previewUrl || ''} alt="Source" className="max-w-full max-h-full object-contain rounded-2xl shadow-xl" />
+                <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
+                    <motion.div 
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="flex flex-col h-full relative"
+                    >
+                         <div className="glass-panel p-4 rounded-3xl h-full flex items-center justify-center overflow-hidden border-white/5 bg-slate-900/40">
+                            <img src={previewUrl || ''} alt="Source" className="max-w-full max-h-[70vh] object-contain rounded-2xl shadow-2xl" />
                          </div>
-                    </div>
-                    <div className="flex flex-col gap-6 h-full overflow-y-auto pr-2 scrollbar-thin">
+                    </motion.div>
+                    <motion.div 
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="flex flex-col h-full"
+                    >
                         <InputPanel 
                             key={`input-panel-${resetKey}`}
                             stylePreviewUrl={stylePreviewUrl}
@@ -165,61 +174,86 @@ const App: React.FC = () => {
                             onClosePromptLib={handlePromptLibraryClose}
                             onNewFile={handleNewFile}
                         />
-                    </div>
+                    </motion.div>
                 </div>
             );
         }
         
         return (
             <div className="flex flex-col items-center justify-center h-full min-h-[60vh]">
-                <div className="w-full max-w-3xl animate-float">
+                <motion.div 
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="w-full max-w-3xl"
+                >
                     <ImageUploader key={`uploader-empty-${resetKey}`} onImageSelect={handleFileSelect} previewUrl={null} />
-                </div>
+                </motion.div>
             </div>
         );
     };
 
     return (
-        <div className="h-screen flex flex-col bg-transparent text-gray-100 font-sans selection:bg-indigo-500/30 selection:text-white overflow-hidden relative">
-            {/* Dynamic Ambient Background Layer */}
+        <div className="h-screen flex flex-col bg-background text-foreground font-sans selection:bg-primary/30 selection:text-white overflow-hidden relative">
+            
+            {/* Ambient dynamic layer */}
             <div 
-                className="absolute inset-0 z-[-1] transition-colors duration-[2000ms] ease-in-out pointer-events-none"
+                className="absolute inset-0 z-[-1] transition-all duration-[3000ms] ease-in-out pointer-events-none"
                 style={{ 
-                    backgroundColor: dominantColor,
-                    opacity: dominantColor === 'transparent' ? 0 : 0.25 
+                    background: dominantColor !== 'transparent' 
+                        ? `radial-gradient(circle at 50% 50%, ${dominantColor}33 0%, transparent 70%)` 
+                        : undefined,
                 }}
-            >
-                <div className="absolute inset-0 bg-black/60 mix-blend-overlay"></div>
-            </div>
+            />
 
             <Header onGalleryClick={handleGalleryClick} onReset={reset} />
+            
             <main className="flex-1 w-full relative overflow-hidden">
-                <div className="w-full h-full p-4 md:p-8 overflow-y-auto scrollbar-thin">
-                    <div className="max-w-[1920px] mx-auto w-full h-full relative flex flex-col">
-                        {isLoading && !resultImageUrl && !threeDFile && (
-                            <div className="absolute inset-0 flex flex-col justify-center items-center bg-[#020617]/80 backdrop-blur-md z-50 rounded-3xl border border-white/5 p-8 text-center">
-                                <Loader />
-                                <p className="mt-8 text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 to-purple-300 animate-pulse italic">
-                                    "{loadingMessage}"
-                                </p>
-                                <p className="text-sm text-gray-500 mt-3 font-mono">Muhittin Abi söylüyor...</p>
-                            </div>
-                        )}
+                <div className="w-full h-full p-4 md:p-8 overflow-y-auto custom-scrollbar">
+                    <div className="max-w-[1700px] mx-auto w-full h-full relative flex flex-col">
+                        
+                        <AnimatePresence mode="wait">
+                            {isLoading && !resultImageUrl && !threeDFile && (
+                                <motion.div 
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="absolute inset-0 flex flex-col justify-center items-center bg-background/90 backdrop-blur-xl z-50 rounded-4xl border border-white/5 p-8 text-center"
+                                >
+                                    <div className="relative">
+                                        <Loader2 className="w-16 h-16 text-primary animate-spin" />
+                                        <Sparkles className="absolute -top-2 -right-2 w-6 h-6 text-indigo-400 animate-pulse" />
+                                    </div>
+                                    <p className="mt-8 text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-primary to-indigo-300 animate-pulse italic uppercase tracking-tighter">
+                                        "{loadingMessage}"
+                                    </p>
+                                    <p className="text-[10px] text-muted-foreground mt-4 font-black uppercase tracking-widest">T-ECOSYSTEM NEURAL RENDERER</p>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
                         {error && (
-                            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-200 rounded-2xl flex justify-between items-center shadow-[0_0_20px_rgba(220,38,38,0.2)] backdrop-blur-md flex-shrink-0 animate-fadeIn">
-                                <span className="flex items-center gap-3">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                    </svg>
-                                    <span className="font-medium">{error}</span>
+                            <motion.div 
+                                initial={{ y: -20, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                className="mb-6 p-5 glass-panel border-red-500/20 text-red-200 rounded-2xl flex justify-between items-center shadow-red-500/10 shadow-2xl animate-in fade-in slide-in-from-top-4"
+                            >
+                                <span className="flex items-center gap-4">
+                                    <AlertCircle className="h-6 w-6 text-red-500" />
+                                    <span className="font-bold text-sm tracking-tight">{error}</span>
                                 </span>
-                                <button onClick={() => setError(null)} className="p-2 hover:bg-red-500/20 rounded-full transition-colors font-bold">&times;</button>
-                            </div>
+                                <button onClick={() => setError(null)} className="p-2 hover:bg-white/5 rounded-full transition-colors font-bold">&times;</button>
+                            </motion.div>
                         )}
-                        {renderMainContent()}
+
+                        <AnimatePresence mode="wait">
+                            <div className="h-full min-h-0 flex-shrink flex-grow">
+                                {renderMainContent()}
+                            </div>
+                        </AnimatePresence>
                     </div>
                 </div>
             </main>
+
             <ImageModal
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
@@ -233,12 +267,20 @@ const App: React.FC = () => {
                 onSubmit={handleCorrectionSubmit}
                 isLoading={isCorrecting}
             />
+            
             <GalleryModal
                 isOpen={isGalleryOpen}
                 onClose={() => setIsGalleryOpen(false)}
                 images={gallery}
                 onImageSelect={handleSelectFromGallery}
             />
+
+            {/* Subtle Ecosystem Signature */}
+            <div className="fixed bottom-4 right-8 pointer-events-none opacity-20">
+                 <div className="flex items-center gap-2 font-black text-[10px] tracking-[0.3em] uppercase">
+                    <span className="text-primary font-bold">R</span>-ENGINE v4.2
+                 </div>
+            </div>
         </div>
     );
 };
