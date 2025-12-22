@@ -1,127 +1,121 @@
 
-# 🏗️ Rendercı Muhittin ABİ
+# 🏗️ Rendercı Muhittin ABİ - AI Mimari Görselleştirme Asistanı
 
-**Mimari renderların içinden geçen yapay zeka asistanınız.**
+> **"Abi o kolonlar taşımaz ama renderda hallederiz..."**
 
-Rendercı Muhittin, mimarlar, tasarımcılar ve sanatçılar için geliştirilmiş; eskizleri, teknik çizimleri, PDF paftalarını ve 3D modelleri saniyeler içinde yüksek çözünürlüklü, fotorealistik görsellere dönüştüren gelişmiş bir web uygulamasıdır. 
+Rendercı Muhittin, mimarlar, iç mimarlar ve tasarımcılar için geliştirilmiş; eskizleri, PDF paftaları ve ham 3D modelleri saniyeler içinde fotorealistik görsellere dönüştüren, **Google Gemini 2.5 ve 3.0** modellerinden güç alan yeni nesil bir web uygulamasıdır.
 
-**Google Gemini 2.5 Flash** ve **Gemini 3 Pro** modellerinin multimodal yeteneklerini kullanarak, görselleri analiz eder ve istediğiniz stilde yeniden yorumlar.
-
----
-
-## ✨ Özellikler
-
-### 🎨 Gelişmiş Render Motoru
-*   **Çoklu Format Desteği:** `.jpg`, `.png`, `.pdf` dosyalarını ve `.3dm`, `.obj`, `.stl` formatındaki 3D modelleri destekler.
-*   **Akıllı Stil Transferi:** Kendi referans görselinizi yükleyin veya ön tanımlı stilleri kullanın (Realistik, Eskiz, Vaziyet Planı, Kesit).
-*   **4K Çözünürlük:** Standart (1K), Yüksek (2K) ve Ultra (4K) çıktı desteği.
-
-### 🧊 Entegre 3D Görüntüleyici
-*   Tarayıcı içinde **Three.js** tabanlı güçlü 3D görüntüleyici.
-*   `.obj`, `.stl` ve Rhino `.3dm` dosyalarını doğrudan yükleyin.
-*   Modeli döndürün, yakınlaştırın ve istediğiniz açıyı yakalayıp anında render'a gönderin.
-*   *Not: `.step` dosyaları için dönüştürme uyarısı içerir.*
-
-### 🛠️ Profesyonel Düzenleme Araçları (Inpainting)
-*   **Katmanlı Düzenleme:** Görselin belirli bölgelerini seçin (Kutu veya Kement aracı ile).
-*   **Kompozit Promptlama:** Seçili alanları "Ön Plan", "Arka Plan" mantığıyla katmanlar halinde yeniden oluşturun.
-
-### 🧭 3D Sahne Keşfi (Explorer Mode)
-*   Oluşturulan render'ın içinde yapay zeka ile gezinin.
-*   Kamerayı ileri, geri, sağa, sola veya yukarı/aşağı hareket ettirerek sahnenin devamını hayal ettirin ve oluşturun.
-
-### 💾 Galeri ve Geçmiş
-*   **IndexedDB** teknolojisi ile renderlarınızı tarayıcınızda yerel olarak saklar.
-*   Geçmiş renderlar arasında hızlı geçiş yapın ve varyasyonlar türetin.
-
-### 💎 Deep Dark Glassmorphism Arayüz
-*   Modern, siber-estetik tasarım dili.
-*   Neon parıltılar (Glow effects), bulanık cam paneller ve akıcı animasyonlar.
+Bu proje, karmaşık render yazılımlarının (V-Ray, Corona, Lumion) saatler süren iş akışlarını yapay zeka ile saniyelere indirmeyi hedefler.
 
 ---
 
-## 🚀 Teknolojiler
+## 🌟 Temel Özellikler
 
-Bu proje, modern web teknolojilerinin en güncel sürümleri kullanılarak geliştirilmiştir:
+### 1. Çoklu Format Desteği ve Dönüşüm
+*   **Görseller:** `.jpg`, `.png`, `.webp` formatındaki eskizleri veya kolajları işler.
+*   **PDF Paftalar:** `pdf.js` entegrasyonu ile vektörel PDF çizimlerini (plan, kesit) otomatik olarak yüksek çözünürlüklü görsellere çevirir ve render alır.
+*   **3D Modeller:** `.obj`, `.stl` ve Rhino `.3dm` formatlarını tarayıcı tabanlı görüntüleyicide açar.
 
-*   **Frontend:** [React 19](https://react.dev/), TypeScript
-*   **Stil:** [Tailwind CSS](https://tailwindcss.com/) (Özel konfigürasyon ve animasyonlar)
-*   **Yapay Zeka:** [Google GenAI SDK](https://www.npmjs.com/package/@google/genai) (Gemini 3 Pro & 2.5 Flash)
-*   **3D Motoru:** [Three.js](https://threejs.org/) (@react-three/fiber kullanılmadan, saf implementasyon)
-*   **3D Loaderlar:** `Rhino3dmLoader`, `OBJLoader`, `STLLoader`
-*   **PDF İşleme:** `pdfjs-dist`
-*   **Veri Depolama:** IndexedDB (Local Browser Storage)
+### 2. Entegre 3D Motoru (Three.js)
+Uygulama, harici bir yazılıma ihtiyaç duymadan kendi içinde bir 3D görüntüleyici barındırır:
+*   **Formatlar:** Rhino (`.3dm`), Standart (`.obj`, `.stl`).
+*   **Gizmo Kontrolleri:** Modeli tarayıcı içinde taşıyın, döndürün ve ölçeklendirin.
+*   **HDRI Işıklandırma:** Modelin detaylarını görebilmek için stüdyo ışıklandırması simülasyonu.
+*   **Snapshot:** İstediğiniz açıyı yakaladığınız anda "Bu Açıyı Renderla" diyerek görüntüyü yapay zeka motoruna besler.
+
+### 3. Google Gemini Entegrasyonu (Beyin)
+Uygulama, `@google/genai` SDK'sını kullanarak en son modelleri kullanır:
+*   **Standart Render:** `gemini-2.5-flash-image` (Hız ve maliyet dengesi).
+*   **Ultra Detay & Upscale:** `gemini-3-pro-image-preview` (Yüksek sadakat ve 4K çıktı).
+*   **Prompt Mühendisliği:** Kullanıcının seçtiği stillere (Realistik, Eskiz, Vaziyet) göre arka planda optimize edilmiş sistem talimatları (System Instructions) oluşturulur.
+
+### 4. Profesyonel Düzenleme (Inpainting)
+Render sonucunda beğenilmeyen alanlar için:
+*   **Katmanlı Seçim:** Kutu veya Kement (Lasso) aracı ile alan seçimi.
+*   **Çoklu Katman:** Ön plan ve arka plan için ayrı ayrı prompt girerek (örn: "Öne ağaç ekle", "Arkaya gökdelen koy") kompozit düzenleme yapabilme.
+
+### 5. Galeri ve Yerel Depolama
+*   **IndexedDB:** Tüm render geçmişiniz, promptlarınız ve galeriniz tarayıcınızın yerel veritabanında saklanır. Sayfayı yenileseniz bile çalışmalarınız kaybolmaz.
 
 ---
 
-## 📦 Kurulum ve Çalıştırma
+## 📂 Proje Yapısı ve Dosya Açıklamaları
 
-Projeyi yerel ortamınızda çalıştırmak için aşağıdaki adımları izleyin:
+Uygulamanın kalbi olan dosyaların ne işe yaradığının detaylı dökümü:
 
-1.  **Depoyu Klonlayın:**
-    ```bash
-    git clone https://github.com/kullaniciadi/renderci-muhittin.git
-    cd renderci-muhittin
-    ```
+### Ana Yapı
+*   **`index.html`**: Uygulamanın giriş noktası. Global stiller, fontlar (Outfit) ve temel CSS değişkenleri burada tanımlıdır. Arka plandaki "Deep Slate" teması ve cam (glassmorphism) efektleri buradaki CSS ile sağlanır.
+*   **`App.tsx`**: Ana orkestra şefi. Tüm durum yönetimi (State Management), hangi ekranın gösterileceği (Yükleme, 3D, Sonuç) ve modalların kontrolü burada toplanır.
+*   **`types.ts`**: TypeScript tip tanımları. Uygulama genelinde kullanılan veri yapılarını (Layer, StylePreset, Resolution vb.) standartlaştırır.
 
-2.  **Bağımlılıkları Yükleyin:**
-    Proje modül yapısı gereği `node_modules` kullanmıyor olabilir (CDN importları), ancak geliştirme ortamı için:
+### Bileşenler (`components/`)
+*   **`InputPanel.tsx`**: Kullanıcının prompt girdiği, stil seçtiği ve materyal eklediği sol/alt panel.
+*   **`ResultDisplay.tsx`**: Render sonucunun gösterildiği ekran. "Öncesi/Sonrası" kaydırıcısı (CompareSlider) ve resim üzerindeki butonları barındırır.
+*   **`ThreeDViewer.tsx`**: Three.js tabanlı 3D motoru. Dosyaları yükler, sahneye koyar, ışıklandırır ve kameradan görüntü yakalar.
+*   **`ImageModal.tsx`**: Düzenleme (Inpainting) penceresi. Canvas üzerinde çizim yaparak maske oluşturur ve katmanları yönetir.
+*   **`StyleReferenceUploader.tsx`**: Kullanıcının "Bu görseldeki gibi olsun" dediği referans resim yükleme alanı.
+*   **`MaterialPalette.tsx`**: Hazır materyal ve atmosfer önerileri sunan (Beton, Ahşap, Gün Batımı vb.) açılır menü.
+*   **`PromptLibraryModal.tsx`**: "Büyü Kitabı". Sık kullanılan promptların kaydedilip tekrar kullanıldığı kütüphane.
+
+### Servisler (`services/`)
+*   **`geminiService.ts`**: **En Kritik Dosya.** Google Gemini API ile konuşan katman.
+    *   Görselleri Base64'e çevirir.
+    *   Seçilen stile göre (Vaziyet, Kesit, Render) "System Instruction" yazar.
+    *   Magic Upscale ve Inpainting mantığını yönetir.
+*   **`storageService.ts`**: `IndexedDB` wrapper'ı. Verilerin tarayıcıda kalıcı olmasını sağlayan veritabanı işlemlerini yapar.
+*   **`pdfService.ts`**: PDF dosyalarını `pdfjs-dist` kullanarak yüksek kaliteli PNG görsellerine dönüştürür. Akıllı ölçekleme (Smart Scaling) ile GPU limitlerini aşmadan maksimum kaliteyi hedefler.
+
+### Hook'lar (`hooks/`)
+*   **`useAppState.ts`**: `App.tsx`'i temiz tutmak için tüm lojik, durum yönetimi ve fonksiyonlar (Render al, Kaydet, Sıfırla vb.) bu özel hook içinde toplanmıştır. "Muhittin Abi"nin rastgele sözleri de burada tanımlıdır.
+
+---
+
+## 🛠️ Teknik Kurulum
+
+Bu proje modern React (v19) ve modül tabanlı bir yapı kullanır.
+
+### Gereksinimler
+*   Node.js (Geliştirme için) veya modern bir tarayıcı (Çalıştırma için).
+*   **Google AI Studio API Anahtarı:** Proje çalışırken sizden bir API anahtarı seçmenizi isteyecektir. Özellikle video ve yüksek çözünürlüklü (Gemini 3 Pro) işlemler için faturalı bir hesaba bağlı API anahtarı önerilir.
+
+### Kurulum Adımları
+
+1.  Repoyu klonlayın.
+2.  Bağımlılıklar `index.html` içindeki `importmap` üzerinden CDN ile çekilmektedir, bu yüzden devasa bir `node_modules` klasörüne ihtiyacınız yoktur. Ancak yerel geliştirme sunucusu için:
     ```bash
     npm install
-    ```
-
-3.  **API Anahtarı:**
-    Uygulama, Google AI Studio API anahtarına ihtiyaç duyar. Uygulama arayüzü, `window.aistudio` entegrasyonu üzerinden anahtar seçimi yapmanıza olanak tanır veya `.env` dosyasında `API_KEY` tanımlayabilirsiniz.
-
-4.  **Uygulamayı Başlatın:**
-    ```bash
-    npm start
-    # veya
     npm run dev
     ```
+3.  Uygulama açıldığında sağ üstteki veya işlem sırasındaki API anahtarı seçiciyi kullanarak Google hesabınızı bağlayın.
 
 ---
 
-## 🎮 Kullanım Kılavuzu
+## 🎨 Stil ve Tasarım Dili
 
-1.  **Görsel Yükleme:** Ana ekrandaki alana bir resim sürükleyin veya 3D model dosyanızı seçin.
-2.  **Açı Ayarlama (3D ise):** Model yüklendiyse, fare ile istediğiniz açıyı ayarlayın ve "Bu Açıyı Renderla" butonuna basın.
-3.  **Ayarlar:**
-    *   **Çözünürlük:** 1K (Hızlı), 2K veya 4K seçin.
-    *   **Stil:** "Realistik", "Eskiz" vb. bir preset seçin veya kendi stil görselinizi yükleyin.
-    *   **Prompt:** Ekstra detaylar için (örn: "karlı bir akşam üstü, neon tabelalar") açıklama girin.
-4.  **Render:** "Render Al" butonuna basın ve Muhittin Abi'nin sihrini bekleyin.
-5.  **Düzenleme:** Sonuçtan memnun değilseniz "Düzenle" diyerek belirli alanları maskeleyip değiştirebilirsiniz.
+Proje, **"Cyber-Construction"** estetiğini benimser:
+*   **Renk Paleti:** `#020617` (Slate 950) zemin üzerine İndigo ve Mor neon vurgular.
+*   **Glassmorphism:** Paneller yarı saydamdır ve arka planı buzlu cam (blur) etkisiyle gösterir.
+*   **Font:** 'Outfit', sans-serif, modern ve geometrik.
+*   **Animasyonlar:** Yükleme sırasında dönen ikonlar, RGB akış efektleri ve yumuşak geçişler.
 
 ---
 
-## 📂 Proje Yapısı
+## 🤖 Prompt Mühendisliği Detayları
 
-```
-/
-├── components/         # React bileşenleri
-│   ├── ThreeDViewer.tsx    # 3D model görüntüleme motoru
-│   ├── ImageModal.tsx      # Maskeleme ve katman düzenleme
-│   ├── ResultDisplay.tsx   # Sonuç görüntüleme ve aksiyonlar
-│   └── ...
-├── services/           # Harici servis entegrasyonları
-│   ├── geminiService.ts    # Google Gemini API çağrıları
-│   ├── storageService.ts   # IndexedDB işlemleri
-│   └── pdfService.ts       # PDF -> Görsel dönüşümü
-├── hooks/              # Custom React Hooks
-│   └── useAppState.ts      # Tüm uygulama durum yönetimi
-├── types.ts            # TypeScript tip tanımları
-└── index.html          # Ana giriş ve CSS stilleri
-```
+`geminiService.ts` dosyası, kullanıcı girdisini alıp modele şu rolleri atar:
+
+*   **Realistic Mode:** "Sen üst düzey bir doku sanatçısısın. Geometriyi bozmadan malzemeleri PBR (Physically Based Rendering) mantığıyla değiştir."
+*   **Site Plan (Vaziyet):** "Kesinlikle kuş bakışı (Top-down) kal. Gölgeleri 45 derece at. Peyzajı ve yolları teknik çizim standartlarında işle."
+*   **Section (Kesit):** "Siyah taralı alanları (kesilen duvarlar) beton dokusuyla doldur. Odalara 2D insanlar ve mobilyalar ekle ama perspektif katma."
 
 ---
 
-## ⚠️ Lisans ve Yasal Uyarı
+## ⚠️ Bilinen Sınırlamalar
 
-Bu proje **Google Gemini API** kullanır. API kullanım ücretleri ve kotaları Google Cloud hesabınıza bağlıdır. 4K render ve video üretimi ücretli API anahtarı gerektirebilir.
+*   **3D Dosya Boyutu:** Tarayıcı tabanlı render alındığı için çok yüksek poligonlu (100MB+) modeller tarayıcıyı yavaşlatabilir.
+*   **Mobil Deneyim:** 3D görüntüleyici ve Inpainting araçları masaüstü deneyimi için optimize edilmiştir, mobilde temel özellikler çalışır ancak performans değişebilir.
+*   **API Kotası:** Google Gemini API'nin ücretsiz katmanında dakika başına istek sınırı (RPM) vardır.
 
 ---
 
-<p align="center">
-  <small>Mimarinin ve teknolojinin birleştiği nokta.</small>
-</p>
+**"Müşteri kesin revize ister buna, demedi deme..." - Rendercı Muhittin**
