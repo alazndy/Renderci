@@ -29,6 +29,7 @@ interface ResultDisplayProps {
     onEnterExplorer: () => void;
     onExitExplorer: () => void;
     onNavigate: (direction: NavigationDirection) => void;
+    onSaveToUPH?: () => void;
 }
 
 interface ResultDisplayPropsWithUpscale extends ResultDisplayProps {
@@ -39,7 +40,7 @@ interface ResultDisplayPropsWithUpscale extends ResultDisplayProps {
 export const ResultDisplay: React.FC<ResultDisplayPropsWithUpscale> = React.memo(({ 
     imageUrl, sourceImageUrl, onEdit, isLoading, loadingMessage = "Render İşleniyor...", onUndo, canUndo, onRegenerate, onGoBack, onGenerateVariations, 
     onGenerateDifferentAngle, onGenerateFromSource, onUpscale, onNewFile, historyStack, currentIndex, onThumbnailClick,
-    isExplorerMode, onEnterExplorer, onExitExplorer, onNavigate
+    isExplorerMode, onEnterExplorer, onExitExplorer, onNavigate, onSaveToUPH
 }) => {
     
     const [isViewerOpen, setIsViewerOpen] = useState(false);
@@ -178,6 +179,7 @@ export const ResultDisplay: React.FC<ResultDisplayPropsWithUpscale> = React.memo
                         onNewFile={onNewFile}
                         isLoading={isLoading}
                         canUndo={canUndo}
+                        onSaveToUPH={onSaveToUPH}
                     />
                 </div>
             )}

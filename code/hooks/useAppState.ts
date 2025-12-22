@@ -578,9 +578,9 @@ export const useAppState = () => {
         if (!resultImageUrl || !integrationContext) return;
         
         const data = {
-            type: 'RENDER_RESULT',
+            type: 'render_result',
             projectId: integrationContext.projectId,
-            imageUrl: resultImageUrl,
+            resultImageUrl: resultImageUrl,
             timestamp: new Date().toISOString()
         };
 
@@ -588,7 +588,7 @@ export const useAppState = () => {
             window.opener.postMessage(data, '*');
             alert("Görsel UPH'a başarıyla gönderildi!");
         } else {
-            const uphUrl = `http://localhost:3001/projects/${integrationContext.projectId}?integrated_result=render`;
+            const uphUrl = `http://localhost:3001/projects/${integrationContext.projectId}?integrated_result=render&data=${encodeURIComponent(resultImageUrl)}`;
             window.location.href = uphUrl;
         }
     }, [resultImageUrl, integrationContext]);

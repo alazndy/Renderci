@@ -88,7 +88,7 @@ export const StyleReferenceUploader: React.FC<StyleReferenceUploaderProps> = Rea
 
     return (
         <div>
-            <label className="block text-lg font-semibold text-gray-300 mb-2">Referans Stil Görseli (İsteğe Bağlı)</label>
+            <label className="block text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-3 ml-1">Referans Stil Görseli (İsteğe Bağlı)</label>
             <input
                 type="file"
                 ref={fileInputRef}
@@ -103,7 +103,8 @@ export const StyleReferenceUploader: React.FC<StyleReferenceUploaderProps> = Rea
                 onPaste={handlePaste}
                 onKeyDown={handleKeyDown}
                 tabIndex={0}
-                className={`relative w-full h-32 border-2 border-dashed border-gray-600 hover:border-purple-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/50 focus:outline-none rounded-xl flex justify-center items-center cursor-pointer transition-all duration-300 bg-gray-900/50 ${isProcessing ? 'opacity-70 cursor-wait' : ''}`}
+                className={`relative w-full h-32 border-2 border-dashed transition-all duration-300 flex justify-center items-center cursor-pointer overflow-hidden rounded-2xl
+                    ${isProcessing ? 'border-primary/20 bg-primary/5 opacity-70 cursor-wait' : 'border-white/10 bg-white/5 hover:border-primary/40 hover:bg-white/[0.08] focus:ring-4 focus:ring-primary/10 focus:outline-none'}`}
                 aria-label="Stil referans görseli yükleme alanı. Seçmek için tıklayın, sürükleyin veya yapıştırın."
             >
                 {isProcessing ? (

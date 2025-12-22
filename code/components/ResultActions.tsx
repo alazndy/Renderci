@@ -181,7 +181,7 @@ export const ResultActions: React.FC<ResultActionsProps> = React.memo(({
                 <ActionButton 
                     onClick={onSaveToUPH} 
                     disabled={isLoading}
-                    colorClass="bg-primary/20 hover:bg-primary/40 text-primary-foreground hover:shadow-[0_0_20px_rgba(var(--primary),0.4)] border-primary/30"
+                    colorClass="bg-primary/20 hover:bg-primary/40 text-primary-foreground hover:shadow-primary/40 border-primary/30"
                 >
                     <Zap className="w-5 h-5" /> UPH'a Kaydet
                 </ActionButton>

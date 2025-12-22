@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { ImageUploader } from './components/ImageUploader';
 import { ResultDisplay } from './components/ResultDisplay';
@@ -7,12 +7,25 @@ import { ImageModal } from './components/ImageModal';
 import { GalleryModal } from './components/GalleryModal';
 import { InputPanel } from './components/InputPanel';
 import { ThreeDViewer } from './components/ThreeDViewer';
+import { WelcomeScreen } from './components/WelcomeScreen';
 import { useAppState } from './hooks/useAppState';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, AlertCircle, Loader2 } from 'lucide-react';
 import { cn } from './lib/utils';
 
 const App: React.FC = () => {
+    const [showWelcome, setShowWelcome] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem('renderci_welcome_dismissed') !== 'true';
+        }
+        return true;
+    });
+
+    const handleCloseWelcome = () => {
+        localStorage.setItem('renderci_welcome_dismissed', 'true');
+        setShowWelcome(false);
+    };
+
     const {
         sourceFile,
         previewUrl,
@@ -69,7 +82,8 @@ const App: React.FC = () => {
         handleSavePrompt,
         handleDeletePrompt,
         handlePromptLibraryOpen,
-        handlePromptLibraryClose
+        handlePromptLibraryClose,
+        handleSaveToUPH
     } = useAppState();
 
     const handlePromptKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -130,6 +144,7 @@ const App: React.FC = () => {
                     onEnterExplorer={onEnterExplorer}
                     onExitExplorer={onExitExplorer}
                     onNavigate={handleNavigateScene}
+                    onSaveToUPH={handleSaveToUPH}
                 />
             );
         }
@@ -193,7 +208,17 @@ const App: React.FC = () => {
     };
 
     return (
-        <div className="h-screen flex flex-col bg-background text-foreground font-sans selection:bg-primary/30 selection:text-white overflow-hidden relative">
+        <>
+            {showWelcome && (
+                <WelcomeScreen 
+                    onNewProject={handleCloseWelcome}
+                    onOpenFile={handleCloseWelcome}
+                    onSettings={handleCloseWelcome}
+                    onClose={handleCloseWelcome}
+                />
+            )}
+            
+            <div className="h-screen flex flex-col bg-background text-foreground font-sans selection:bg-primary/30 selection:text-white overflow-hidden relative">
             
             {/* Ambient dynamic layer */}
             <div 
@@ -282,6 +307,7 @@ const App: React.FC = () => {
                  </div>
             </div>
         </div>
+        </>
     );
 };
 
