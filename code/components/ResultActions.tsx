@@ -11,7 +11,8 @@ import {
     Palette, 
     Download,
     Wand2,
-    FolderUp
+    FolderUp,
+    Zap
 } from 'lucide-react';
 
 interface ResultActionsProps {
@@ -28,6 +29,7 @@ interface ResultActionsProps {
     onNewFile: () => void;
     isLoading: boolean;
     canUndo: boolean;
+    onSaveToUPH?: () => void;
 }
 
 type ActionButtonProps = {
@@ -62,7 +64,8 @@ export const ResultActions: React.FC<ResultActionsProps> = React.memo(({
     onDownload,
     onNewFile,
     isLoading,
-    canUndo
+    canUndo,
+    onSaveToUPH
 }) => {
     const angleInputRef = useRef<HTMLInputElement>(null);
 
@@ -173,6 +176,16 @@ export const ResultActions: React.FC<ResultActionsProps> = React.memo(({
             >
                 <Download className="w-5 h-5" /> İndir
             </ActionButton>
+
+            {onSaveToUPH && (
+                <ActionButton 
+                    onClick={onSaveToUPH} 
+                    disabled={isLoading}
+                    colorClass="bg-primary/20 hover:bg-primary/40 text-primary-foreground hover:shadow-[0_0_20px_rgba(var(--primary),0.4)] border-primary/30"
+                >
+                    <Zap className="w-5 h-5" /> UPH'a Kaydet
+                </ActionButton>
+            )}
         </div>
     );
 });

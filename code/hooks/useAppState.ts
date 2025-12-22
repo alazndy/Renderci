@@ -51,6 +51,7 @@ export const useAppState = () => {
     const [isRestoringSession, setIsRestoringSession] = useState<boolean>(true);
     const [loadingMessage, setLoadingMessage] = useState<string>("İşleniyor...");
     const [dominantColor, setDominantColor] = useState<string>('transparent');
+    const [integrationContext, setIntegrationContext] = useState<{ projectId: string; source: string } | null>(null);
 
     const resultImageUrl = history.index >= 0 ? history.stack[history.index] : null;
 
@@ -98,6 +99,35 @@ export const useAppState = () => {
         const loadState = async () => {
             try {
                 setIsRestoringSession(true);
+
+                // UPH Integration Check (Priority over saved state)
+                const params = new URLSearchParams(window.location.search);
+                const integrate = params.get('integrate');
+                const fileUrl = params.get('fileUrl');
+                const fileName = params.get('fileName');
+                const projectId = params.get('projectId');
+
+                if (integrate === 'render' && fileUrl && projectId) {
+                    setIntegrationContext({ projectId, source: 'uph' });
+                    setLoadingMessage("Entegrasyon verileri yükleniyor...");
+                    
+                    try {
+                        const response = await fetch(fileUrl);
+                        const blob = await response.blob();
+                        const file = new File([blob], fileName || 'integrated_model.glb', { type: blob.type });
+                        
+                        // Handle the file
+                        handleFileSelect(file);
+                        
+                        // Clear URL params to avoid re-triggering on refresh
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                        return; // Skip loading saved state
+                    } catch (fetchErr) {
+                        console.error("Entegrasyon dosyası yüklenemedi", fetchErr);
+                        setError("Entegrasyon dosyası yüklenemedi.");
+                    }
+                }
+
                 const savedState = await storageService.getAppState();
                 if (savedState) {
                     if (savedState.sourceFileDataUrl) setSourceFile(await dataUrlToFile(savedState.sourceFileDataUrl, 'source.png'));
@@ -544,6 +574,25 @@ export const useAppState = () => {
     const handlePromptLibraryOpen = useCallback(() => setIsPromptLibOpen(true), []);
     const handlePromptLibraryClose = useCallback(() => setIsPromptLibOpen(false), []);
 
+    const handleSaveToUPH = useCallback(() => {
+        if (!resultImageUrl || !integrationContext) return;
+        
+        const data = {
+            type: 'RENDER_RESULT',
+            projectId: integrationContext.projectId,
+            imageUrl: resultImageUrl,
+            timestamp: new Date().toISOString()
+        };
+
+        if (window.opener) {
+            window.opener.postMessage(data, '*');
+            alert("Görsel UPH'a başarıyla gönderildi!");
+        } else {
+            const uphUrl = `http://localhost:3001/projects/${integrationContext.projectId}?integrated_result=render`;
+            window.location.href = uphUrl;
+        }
+    }, [resultImageUrl, integrationContext]);
+
     return {
         // State
         sourceFile, setSourceFile,
@@ -603,6 +652,8 @@ export const useAppState = () => {
         handleSavePrompt,
         handleDeletePrompt,
         handlePromptLibraryOpen,
-        handlePromptLibraryClose
+        handlePromptLibraryClose,
+        integrationContext,
+        handleSaveToUPH
     };
 };
