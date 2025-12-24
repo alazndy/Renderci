@@ -1,0 +1,252 @@
+/**
+ * Batch Render Service for Renderci
+ * Manages render queue and job processing
+ */
+
+import {
+  RenderJob,
+  RenderQueue,
+  BatchRenderConfig,
+  RenderStatus,
+  DEFAULT_BATCH_CONFIG,
+  QUALITY_PRESETS
+} from '../types/batch-render';
+
+type QueueEventHandler = (queue: RenderQueue) => void;
+type JobEventHandler = (job: RenderJob) => void;
+
+class BatchRenderService {
+  private queues: Map<string, RenderQueue> = new Map();
+  private currentQueue: string | null = null;
+  private isProcessing = false;
+  private onQueueUpdate: QueueEventHandler | null = null;
+  private onJobUpdate: JobEventHandler | null = null;
+
+  // === Queue Management ===
+
+  createQueue(name: string, config?: Partial<BatchRenderConfig>): RenderQueue {
+    const queue: RenderQueue = {
+      id: `queue_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      name,
+      jobs: [],
+      config: { ...DEFAULT_BATCH_CONFIG, ...config },
+      status: 'idle',
+      completedCount: 0,
+      failedCount: 0,
+      createdAt: new Date(),
+    };
+
+    this.queues.set(queue.id, queue);
+    return queue;
+  }
+
+  getQueue(queueId: string): RenderQueue | undefined {
+    return this.queues.get(queueId);
+  }
+
+  getAllQueues(): RenderQueue[] {
+    return Array.from(this.queues.values());
+  }
+
+  deleteQueue(queueId: string): boolean {
+    const queue = this.queues.get(queueId);
+    if (queue && queue.status !== 'running') {
+      this.queues.delete(queueId);
+      return true;
+    }
+    return false;
+  }
+
+  // === Job Management ===
+
+  addJob(queueId: string, file: { name: string; url: string; type: '2d' | '3d' | 'cad' }): RenderJob | null {
+    const queue = this.queues.get(queueId);
+    if (!queue) return null;
+
+    const dimensions = QUALITY_PRESETS[queue.config.quality];
+
+    const job: RenderJob = {
+      id: `job_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      fileName: file.name,
+      fileUrl: file.url,
+      fileType: file.type,
+      format: queue.config.format,
+      quality: queue.config.quality,
+      width: queue.config.width || dimensions.width,
+      height: queue.config.height || dimensions.height,
+      backgroundColor: queue.config.backgroundColor,
+      transparent: queue.config.transparent,
+      status: 'pending',
+      progress: 0,
+      createdAt: new Date(),
+    };
+
+    queue.jobs.push(job);
+    this.notifyQueueUpdate(queue);
+    return job;
+  }
+
+  addMultipleJobs(queueId: string, files: { name: string; url: string; type: '2d' | '3d' | 'cad' }[]): RenderJob[] {
+    return files.map(file => this.addJob(queueId, file)).filter((job): job is RenderJob => job !== null);
+  }
+
+  removeJob(queueId: string, jobId: string): boolean {
+    const queue = this.queues.get(queueId);
+    if (!queue) return false;
+
+    const jobIndex = queue.jobs.findIndex(j => j.id === jobId);
+    if (jobIndex >= 0 && queue.jobs[jobIndex].status !== 'processing') {
+      queue.jobs.splice(jobIndex, 1);
+      this.notifyQueueUpdate(queue);
+      return true;
+    }
+    return false;
+  }
+
+  // === Queue Control ===
+
+  async startQueue(queueId: string): Promise<void> {
+    const queue = this.queues.get(queueId);
+    if (!queue || queue.status === 'running') return;
+
+    queue.status = 'running';
+    queue.startedAt = new Date();
+    this.currentQueue = queueId;
+    this.isProcessing = true;
+    this.notifyQueueUpdate(queue);
+
+    await this.processQueue(queue);
+  }
+
+  pauseQueue(queueId: string): void {
+    const queue = this.queues.get(queueId);
+    if (!queue || queue.status !== 'running') return;
+
+    queue.status = 'paused';
+    this.isProcessing = false;
+    this.notifyQueueUpdate(queue);
+  }
+
+  resumeQueue(queueId: string): void {
+    const queue = this.queues.get(queueId);
+    if (!queue || queue.status !== 'paused') return;
+
+    this.startQueue(queueId);
+  }
+
+  cancelQueue(queueId: string): void {
+    const queue = this.queues.get(queueId);
+    if (!queue) return;
+
+    queue.status = 'idle';
+    this.isProcessing = false;
+    
+    // Cancel pending jobs
+    queue.jobs.forEach(job => {
+      if (job.status === 'pending' || job.status === 'processing') {
+        job.status = 'cancelled';
+      }
+    });
+
+    this.notifyQueueUpdate(queue);
+  }
+
+  // === Processing ===
+
+  private async processQueue(queue: RenderQueue): Promise<void> {
+    const pendingJobs = queue.jobs.filter(j => j.status === 'pending');
+    
+    for (const job of pendingJobs) {
+      if (!this.isProcessing || queue.status !== 'running') break;
+
+      await this.processJob(queue, job);
+    }
+
+    // Check if all done
+    if (queue.jobs.every(j => j.status === 'completed' || j.status === 'failed' || j.status === 'cancelled')) {
+      queue.status = 'completed';
+      queue.completedAt = new Date();
+      queue.completedCount = queue.jobs.filter(j => j.status === 'completed').length;
+      queue.failedCount = queue.jobs.filter(j => j.status === 'failed').length;
+      this.isProcessing = false;
+    }
+
+    this.notifyQueueUpdate(queue);
+  }
+
+  private async processJob(queue: RenderQueue, job: RenderJob): Promise<void> {
+    job.status = 'processing';
+    job.startedAt = new Date();
+    job.progress = 0;
+    this.notifyJobUpdate(job);
+
+    try {
+      // Simulate render progress
+      for (let i = 0; i <= 100; i += 10) {
+        if (!this.isProcessing) break;
+        
+        await this.delay(200 + Math.random() * 300); // Simulate work
+        job.progress = i;
+        this.notifyJobUpdate(job);
+      }
+
+      if (this.isProcessing) {
+        // In real implementation, this would call the actual renderer
+        job.status = 'completed';
+        job.progress = 100;
+        job.completedAt = new Date();
+        job.outputUrl = `rendered_${job.id}.${job.format}`;
+        job.outputSize = Math.floor(Math.random() * 5000000) + 500000; // Mock file size
+      }
+    } catch (error) {
+      job.status = 'failed';
+      job.error = error instanceof Error ? error.message : 'Render failed';
+    }
+
+    this.notifyJobUpdate(job);
+  }
+
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  // === Events ===
+
+  onQueueChange(handler: QueueEventHandler): void {
+    this.onQueueUpdate = handler;
+  }
+
+  onJobChange(handler: JobEventHandler): void {
+    this.onJobUpdate = handler;
+  }
+
+  private notifyQueueUpdate(queue: RenderQueue): void {
+    this.onQueueUpdate?.(queue);
+  }
+
+  private notifyJobUpdate(job: RenderJob): void {
+    this.onJobUpdate?.(job);
+  }
+
+  // === Stats ===
+
+  getQueueStats(queueId: string) {
+    const queue = this.queues.get(queueId);
+    if (!queue) return null;
+
+    return {
+      total: queue.jobs.length,
+      pending: queue.jobs.filter(j => j.status === 'pending').length,
+      processing: queue.jobs.filter(j => j.status === 'processing').length,
+      completed: queue.jobs.filter(j => j.status === 'completed').length,
+      failed: queue.jobs.filter(j => j.status === 'failed').length,
+      cancelled: queue.jobs.filter(j => j.status === 'cancelled').length,
+      progress: queue.jobs.length > 0 
+        ? Math.round(queue.jobs.reduce((sum, j) => sum + j.progress, 0) / queue.jobs.length)
+        : 0,
+    };
+  }
+}
+
+// Export singleton
+export const batchRenderService = new BatchRenderService();
