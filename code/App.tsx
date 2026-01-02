@@ -13,6 +13,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, AlertCircle, Loader2 } from 'lucide-react';
 import { cn } from './lib/utils';
 
+// New Renderci Enhancement Components
+import { ProjectSidebar } from './components/project/ProjectSidebar';
+import { BatchPanel } from './components/project/BatchPanel';
+import { ExportModal } from './components/export/ExportModal';
+import { LightingPanel } from './components/ai/LightingPanel';
+import { OutpaintingCanvas } from './components/ai/OutpaintingCanvas';
+import { StyleTransferPanel } from './components/ai/StyleTransferPanel';
+import { MultiModelComposer } from './components/scene/MultiModelComposer';
+import { LightingConfig, TIME_PRESETS } from './types/project';
+
 const App: React.FC = () => {
     const [showWelcome, setShowWelcome] = useState(() => {
         if (typeof window !== 'undefined') {
@@ -25,6 +35,24 @@ const App: React.FC = () => {
         localStorage.setItem('renderci_welcome_dismissed', 'true');
         setShowWelcome(false);
     };
+
+    // New Panel States
+    const [isProjectSidebarOpen, setIsProjectSidebarOpen] = useState(false);
+    const [isBatchPanelOpen, setIsBatchPanelOpen] = useState(false);
+    const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+    const [isLightingPanelOpen, setIsLightingPanelOpen] = useState(false);
+    const [isOutpaintingOpen, setIsOutpaintingOpen] = useState(false);
+    const [isStyleTransferOpen, setIsStyleTransferOpen] = useState(false);
+    const [isSceneComposerOpen, setIsSceneComposerOpen] = useState(false);
+    
+    const [lightingConfig, setLightingConfig] = useState<LightingConfig>({
+        enabled: false,
+        sunDirection: TIME_PRESETS.noon,
+        intensity: 100,
+        colorTemperature: 5500,
+        shadowType: 'soft',
+        ambientOcclusion: true,
+    });
 
     const {
         sourceFile,
@@ -230,7 +258,18 @@ const App: React.FC = () => {
                 }}
             />
 
-            <Header onGalleryClick={handleGalleryClick} onReset={reset} />
+            <Header 
+                onGalleryClick={handleGalleryClick} 
+                onReset={reset}
+                onProjectsClick={() => setIsProjectSidebarOpen(true)}
+                onBatchClick={() => setIsBatchPanelOpen(true)}
+                onExportClick={() => setIsExportModalOpen(true)}
+                onSceneClick={() => setIsSceneComposerOpen(true)}
+                onLightingClick={() => setIsLightingPanelOpen(!isLightingPanelOpen)}
+                onOutpaintClick={() => setIsOutpaintingOpen(true)}
+                onStyleTransferClick={() => setIsStyleTransferOpen(true)}
+                hasResult={!!resultImageUrl}
+            />
             
             <main className="flex-1 w-full relative overflow-hidden">
                 <div className="w-full h-full p-4 md:p-8 overflow-y-auto custom-scrollbar">
@@ -303,9 +342,88 @@ const App: React.FC = () => {
             {/* Subtle Ecosystem Signature */}
             <div className="fixed bottom-4 right-8 pointer-events-none opacity-20">
                  <div className="flex items-center gap-2 font-black text-[10px] tracking-[0.3em] uppercase">
-                    <span className="text-primary font-bold">R</span>-ENGINE v4.2
+                    <span className="text-primary font-bold">R</span>-ENGINE v5.0
                  </div>
             </div>
+
+            {/* New Panels */}
+            <ProjectSidebar 
+                isOpen={isProjectSidebarOpen}
+                onClose={() => setIsProjectSidebarOpen(false)}
+            />
+
+            <BatchPanel 
+                isOpen={isBatchPanelOpen}
+                onClose={() => setIsBatchPanelOpen(false)}
+            />
+
+            <ExportModal 
+                isOpen={isExportModalOpen}
+                onClose={() => setIsExportModalOpen(false)}
+                imageUrl={resultImageUrl || ''}
+                onExport={async (config) => {
+                    console.log('Exporting with config:', config);
+                    // TODO: Implement actual export logic
+                }}
+            />
+
+            {/* Lighting Panel - Floating */}
+            {isLightingPanelOpen && resultImageUrl && (
+                <div className="fixed right-4 top-24 z-30 w-80">
+                    <LightingPanel 
+                        config={lightingConfig}
+                        onChange={setLightingConfig}
+                    />
+                </div>
+            )}
+
+            {/* Outpainting Mode */}
+            {isOutpaintingOpen && resultImageUrl && (
+                <div className="fixed inset-0 z-50">
+                    <OutpaintingCanvas 
+                        imageUrl={resultImageUrl}
+                        onOutpaint={async (config) => {
+                            console.log('Outpainting with config:', config);
+                            return resultImageUrl; // TODO: Implement actual outpainting
+                        }}
+                        onComplete={(newUrl) => {
+                            console.log('Outpainting complete:', newUrl);
+                            setIsOutpaintingOpen(false);
+                        }}
+                        onCancel={() => setIsOutpaintingOpen(false)}
+                    />
+                </div>
+            )}
+
+            {/* Style Transfer Mode */}
+            {isStyleTransferOpen && resultImageUrl && (
+                <div className="fixed inset-0 z-50">
+                    <StyleTransferPanel 
+                        sourceImageUrl={resultImageUrl}
+                        onTransfer={async (config) => {
+                            console.log('Style transfer with config:', config);
+                            return resultImageUrl; // TODO: Implement actual style transfer
+                        }}
+                        onComplete={(newUrl) => {
+                            console.log('Style transfer complete:', newUrl);
+                            setIsStyleTransferOpen(false);
+                        }}
+                        onCancel={() => setIsStyleTransferOpen(false)}
+                    />
+                </div>
+            )}
+
+            {/* Multi-Model Scene Composer */}
+            {isSceneComposerOpen && (
+                <MultiModelComposer 
+                    onCapture={(imageUrl) => {
+                        console.log('Scene captured:', imageUrl);
+                        // TODO: Use captured image as render source
+                        setIsSceneComposerOpen(false);
+                    }}
+                    onCancel={() => setIsSceneComposerOpen(false)}
+                />
+            )}
         </div>
         </>
     );
