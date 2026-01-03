@@ -23,6 +23,9 @@ import { StyleTransferPanel } from './components/ai/StyleTransferPanel';
 import { MultiModelComposer } from './components/scene/MultiModelComposer';
 import { LightingConfig, TIME_PRESETS } from './types/project';
 
+import { CookieConsent } from './components/compliance/CookieConsent';
+import { LegalModal } from './components/compliance/LegalModal';
+
 const App: React.FC = () => {
     const [showWelcome, setShowWelcome] = useState(() => {
         if (typeof window !== 'undefined') {
@@ -34,6 +37,19 @@ const App: React.FC = () => {
     const handleCloseWelcome = () => {
         localStorage.setItem('renderci_welcome_dismissed', 'true');
         setShowWelcome(false);
+    };
+    const handleCloseWelcome = () => {
+        localStorage.setItem('renderci_welcome_dismissed', 'true');
+        setShowWelcome(false);
+    };
+
+    // Compliance State
+    const [isLegalModalOpen, setIsLegalModalOpen] = useState(false);
+    const [legalTab, setLegalTab] = useState('privacy');
+
+    const openLegal = (tab: string) => {
+      setLegalTab(tab);
+      setIsLegalModalOpen(true);
     };
 
     // New Panel States
@@ -424,6 +440,9 @@ const App: React.FC = () => {
                     onCancel={() => setIsSceneComposerOpen(false)}
                 />
             )}
+            
+            <CookieConsent onOpenLegal={openLegal} />
+            <LegalModal isOpen={isLegalModalOpen} onClose={() => setIsLegalModalOpen(false)} defaultTab={legalTab} />
         </div>
         </>
     );
