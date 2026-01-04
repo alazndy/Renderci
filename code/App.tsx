@@ -38,10 +38,7 @@ const App: React.FC = () => {
         localStorage.setItem('renderci_welcome_dismissed', 'true');
         setShowWelcome(false);
     };
-    const handleCloseWelcome = () => {
-        localStorage.setItem('renderci_welcome_dismissed', 'true');
-        setShowWelcome(false);
-    };
+
 
     // Compliance State
     const [isLegalModalOpen, setIsLegalModalOpen] = useState(false);
@@ -266,12 +263,10 @@ const App: React.FC = () => {
             
             {/* Ambient dynamic layer */}
             <div 
-                className="absolute inset-0 z-[-1] transition-all duration-[3000ms] ease-in-out pointer-events-none"
+                className="absolute inset-0 z-[-1] transition-all duration-[3000ms] ease-in-out pointer-events-none bg-[image:radial-gradient(circle_at_50%_50%,var(--dynamic-gradient-color)_0%,transparent_70%)]"
                 style={{ 
-                    background: dominantColor !== 'transparent' 
-                        ? `radial-gradient(circle at 50% 50%, ${dominantColor}33 0%, transparent 70%)` 
-                        : undefined,
-                }}
+                    '--dynamic-gradient-color': dominantColor !== 'transparent' ? `${dominantColor}33` : 'transparent',
+                } as React.CSSProperties}
             />
 
             <Header 
